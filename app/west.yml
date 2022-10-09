@@ -4,10 +4,14 @@ manifest:
       url-base: https://github.com/zephyrproject-rtos
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
+    - name: manna-harbour
+      url-base: https://github.com/manna-harbour
   projects:
     - name: zephyr
-      remote: zmkfirmware
-      revision: v3.0.0+zmk-fixes
+      #remote: zmkfirmware
+      #revision: v3.0.0+zmk-fixes
+      remote: manna-harbour
+      revision: v3.0.0+zmk-fixes-suspend-test
       clone-depth: 1
       import:
         # TODO: Rename once upstream offers option like `exclude` or `denylist`
