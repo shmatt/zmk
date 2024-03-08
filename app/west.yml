@@ -4,10 +4,14 @@ manifest:
       url-base: https://github.com/zephyrproject-rtos
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
+    - name: manna-harbour
+      url-base: https://github.com/manna-harbour
+    - name: shmatt
+      url-base: https://github.com/shmatt
   projects:
     - name: zephyr
-      remote: zmkfirmware
-      revision: v3.5.0+zmk-fixes
+      remote: shmatt
+      revision: v3.5.0+zmk-fixes-suspend-test-mouse-keys
       clone-depth: 1
       import:
         name-blocklist:

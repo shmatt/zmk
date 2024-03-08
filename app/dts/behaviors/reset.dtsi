@@ -14,6 +14,7 @@
             #binding-cells = <0>;
         };
 
+<<<<<<< HEAD
         // Behavior can be invoked on peripherals, so name must be <= 8 characters.
         bootloader: bootload {
             compatible = "zmk,behavior-reset";
@@ -21,4 +22,19 @@
             #binding-cells = <0>;
         };
     };
+=======
+		bootloader: behavior_reset_dfu {
+			compatible = "zmk,behavior-reset";
+			label = "BOOTLOAD";
+			type = <RST_UF2>;
+			#binding-cells = <0>;
+		};
+		suspend: behavior_reset_suspend {
+			compatible = "zmk,behavior-reset";
+			label = "SUSPEND";
+			type = <RST_SUSPEND>;
+			#binding-cells = <0>;
+		};
+	};
+>>>>>>> 1d5aeb16f6f3e343c0bdf8c6672caeb82ef65b26
 };
