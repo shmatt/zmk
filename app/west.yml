@@ -4,10 +4,12 @@ manifest:
       url-base: https://github.com/zephyrproject-rtos
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
+    - name: shmatt
+      url-base: https://github.com/shmatt
   projects:
     - name: zephyr
-      remote: zmkfirmware
-      revision: v3.5.0+zmk-fixes
+      remote: shmatt
+      revision: v3.5.0+zmk-custom
       clone-depth: 1
       import:
         name-blocklist:
