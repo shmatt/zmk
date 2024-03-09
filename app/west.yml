@@ -10,7 +10,7 @@ manifest:
       url-base: https://github.com/shmatt
   projects:
     - name: zephyr
-      remote: manner-harbour
+      remote: manna-harbour
       revision: v3.0.0+zmk-fixes-suspend-test
       clone-depth: 1
       import:
