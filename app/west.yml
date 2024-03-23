@@ -8,8 +8,8 @@ manifest:
       url-base: https://github.com/shmatt
   projects:
     - name: zephyr
-      remote: shmatt
-      revision: v3.5.0+zmk-custom
+      remote: zmkfirmware
+      revision: v3.5.0+zmk-fixes
       clone-depth: 1
       import:
         name-blocklist:
