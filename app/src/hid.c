@@ -33,6 +33,13 @@ static struct zmk_hid_mouse_report mouse_report = {
 
 #endif // IS_ENABLED(CONFIG_ZMK_MOUSE)
 
+#if IS_ENABLED(CONFIG_ZMK_GAMEPAD)
+
+static struct zmk_hid_gamepad_report gamepad_report = {.report_id = ZMK_HID_REPORT_ID_GAMEPAD,
+                                                        .body = {0}};
+
+#endif // IS_ENABLED(CONFIG_ZMK_GAMEPAD)
+
 // Keep track of how often a modifier was pressed.
 // Only release the modifier if the count is 0.
 static int explicit_modifier_counts[8] = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -462,6 +469,64 @@ void zmk_hid_mouse_scroll_update(int8_t x, int8_t y) {
 void zmk_hid_mouse_clear(void) { memset(&mouse_report.body, 0, sizeof(mouse_report.body)); }
 
 #endif // IS_ENABLED(CONFIG_ZMK_MOUSE)
+
+#if IS_ENABLED(CONFIG_ZMK_GAMEPAD)
+
+/* Reference-counted like the modifier and mouse-button paths, so two
+ * sources holding the same logical button don't release it early. */
+static int explicit_gamepad_button_counts[ZMK_HID_GAMEPAD_NUM_BUTTONS];
+static zmk_gamepad_button_flags_t explicit_gamepad_buttons;
+
+int zmk_hid_gamepad_button_press(zmk_gamepad_button_t button) {
+    if (button >= ZMK_HID_GAMEPAD_NUM_BUTTONS) {
+        return -EINVAL;
+    }
+
+    explicit_gamepad_button_counts[button]++;
+    LOG_DBG("Gamepad button %d count %d", button, explicit_gamepad_button_counts[button]);
+    WRITE_BIT(explicit_gamepad_buttons, button, true);
+    gamepad_report.body.buttons = explicit_gamepad_buttons;
+    return 0;
+}
+
+int zmk_hid_gamepad_button_release(zmk_gamepad_button_t button) {
+    if (button >= ZMK_HID_GAMEPAD_NUM_BUTTONS) {
+        return -EINVAL;
+    }
+
+    if (explicit_gamepad_button_counts[button] <= 0) {
+        LOG_ERR("Tried to release gamepad button %d too often", button);
+        return -EINVAL;
+    }
+
+    explicit_gamepad_button_counts[button]--;
+    LOG_DBG("Gamepad button %d count: %d", button, explicit_gamepad_button_counts[button]);
+    if (explicit_gamepad_button_counts[button] == 0) {
+        WRITE_BIT(explicit_gamepad_buttons, button, false);
+    }
+    gamepad_report.body.buttons = explicit_gamepad_buttons;
+    return 0;
+}
+
+void zmk_hid_gamepad_left_stick_set(int8_t x, int8_t y) {
+    gamepad_report.body.d_x = x;
+    gamepad_report.body.d_y = y;
+}
+
+void zmk_hid_gamepad_right_stick_set(int8_t x, int8_t y) {
+    gamepad_report.body.d_z = x;
+    gamepad_report.body.d_rz = y;
+}
+
+void zmk_hid_gamepad_clear(void) {
+    memset(&gamepad_report.body, 0, sizeof(gamepad_report.body));
+    memset(explicit_gamepad_button_counts, 0, sizeof(explicit_gamepad_button_counts));
+    explicit_gamepad_buttons = 0;
+}
+
+struct zmk_hid_gamepad_report *zmk_hid_get_gamepad_report(void) { return &gamepad_report; }
+
+#endif // IS_ENABLED(CONFIG_ZMK_GAMEPAD)
 
 struct zmk_hid_keyboard_report *zmk_hid_get_keyboard_report(void) {
     return &keyboard_report;

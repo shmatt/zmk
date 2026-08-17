@@ -12,6 +12,7 @@
 #include <zmk/keys.h>
 #if IS_ENABLED(CONFIG_ZMK_MOUSE)
 #include <zmk/mouse.h>
+#include <zmk/gamepad.h>
 #endif // IS_ENABLED(CONFIG_ZMK_MOUSE)
 
 #include <dt-bindings/zmk/hid_usage.h>
@@ -24,6 +25,7 @@
 #endif
 
 #define ZMK_HID_MOUSE_NUM_BUTTONS 0x05
+#define ZMK_HID_GAMEPAD_NUM_BUTTONS 0x20
 
 // See https://www.usb.org/sites/default/files/hid1_11.pdf section 6.2.2.4 Main Items
 
@@ -58,6 +60,7 @@
 #define ZMK_HID_REPORT_ID_LEDS 0x01
 #define ZMK_HID_REPORT_ID_CONSUMER 0x02
 #define ZMK_HID_REPORT_ID_MOUSE 0x03
+#define ZMK_HID_REPORT_ID_GAMEPAD 0x04
 
 // Needed until Zephyr offers a 2 byte usage macro
 #define HID_USAGE16(idx)                                                                           \
@@ -186,6 +189,36 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_END_COLLECTION,
     HID_END_COLLECTION,
 #endif // IS_ENABLED(CONFIG_ZMK_MOUSE)
+
+#if IS_ENABLED(CONFIG_ZMK_GAMEPAD)
+    HID_USAGE_PAGE(HID_USAGE_GD),
+    HID_USAGE(HID_USAGE_GD_GAMEPAD),
+    HID_COLLECTION(HID_COLLECTION_APPLICATION),
+    HID_REPORT_ID(ZMK_HID_REPORT_ID_GAMEPAD),
+    HID_COLLECTION(HID_COLLECTION_PHYSICAL),
+    /* Two sticks as absolute axes. Reported as signed 8-bit so the report
+     * stays small; hosts treat logical 0 as centred. */
+    HID_USAGE_PAGE(HID_USAGE_GEN_DESKTOP),
+    HID_USAGE(HID_USAGE_GD_X),
+    HID_USAGE(HID_USAGE_GD_Y),
+    HID_USAGE(HID_USAGE_GD_Z),
+    HID_USAGE(HID_USAGE_GD_RZ),
+    HID_LOGICAL_MIN8(-0x7F),
+    HID_LOGICAL_MAX8(0x7F),
+    HID_REPORT_SIZE(0x08),
+    HID_REPORT_COUNT(0x04),
+    HID_INPUT(ZMK_HID_MAIN_VAL_DATA | ZMK_HID_MAIN_VAL_VAR | ZMK_HID_MAIN_VAL_ABS),
+    HID_USAGE_PAGE(HID_USAGE_BUTTON),
+    HID_USAGE_MIN8(0x1),
+    HID_USAGE_MAX8(ZMK_HID_GAMEPAD_NUM_BUTTONS),
+    HID_LOGICAL_MIN8(0x00),
+    HID_LOGICAL_MAX8(0x01),
+    HID_REPORT_SIZE(0x01),
+    HID_REPORT_COUNT(ZMK_HID_GAMEPAD_NUM_BUTTONS),
+    HID_INPUT(ZMK_HID_MAIN_VAL_DATA | ZMK_HID_MAIN_VAL_VAR | ZMK_HID_MAIN_VAL_ABS),
+    HID_END_COLLECTION,
+    HID_END_COLLECTION,
+#endif // IS_ENABLED(CONFIG_ZMK_GAMEPAD)
 };
 
 #if IS_ENABLED(CONFIG_ZMK_USB_BOOT)
@@ -264,6 +297,23 @@ struct zmk_hid_mouse_report {
 
 #endif // IS_ENABLED(CONFIG_ZMK_MOUSE)
 
+#if IS_ENABLED(CONFIG_ZMK_GAMEPAD)
+
+struct zmk_hid_gamepad_report_body {
+    int8_t d_x;
+    int8_t d_y;
+    int8_t d_z;
+    int8_t d_rz;
+    zmk_gamepad_button_flags_t buttons;
+} __packed;
+
+struct zmk_hid_gamepad_report {
+    uint8_t report_id;
+    struct zmk_hid_gamepad_report_body body;
+} __packed;
+
+#endif // IS_ENABLED(CONFIG_ZMK_GAMEPAD)
+
 zmk_mod_flags_t zmk_hid_get_explicit_mods(void);
 int zmk_hid_register_mod(zmk_mod_t modifier);
 int zmk_hid_unregister_mod(zmk_mod_t modifier);
@@ -295,6 +345,16 @@ int zmk_hid_mouse_button_press(zmk_mouse_button_t button);
 int zmk_hid_mouse_button_release(zmk_mouse_button_t button);
 int zmk_hid_mouse_buttons_press(zmk_mouse_button_flags_t buttons);
 int zmk_hid_mouse_buttons_release(zmk_mouse_button_flags_t buttons);
+
+#if IS_ENABLED(CONFIG_ZMK_GAMEPAD)
+int zmk_hid_gamepad_button_press(zmk_gamepad_button_t button);
+int zmk_hid_gamepad_button_release(zmk_gamepad_button_t button);
+/* Absolute stick positions, unlike the mouse's relative deltas. */
+void zmk_hid_gamepad_left_stick_set(int8_t x, int8_t y);
+void zmk_hid_gamepad_right_stick_set(int8_t x, int8_t y);
+void zmk_hid_gamepad_clear(void);
+struct zmk_hid_gamepad_report *zmk_hid_get_gamepad_report(void);
+#endif // IS_ENABLED(CONFIG_ZMK_GAMEPAD)
 void zmk_hid_mouse_movement_set(int16_t x, int16_t y);
 void zmk_hid_mouse_scroll_set(int8_t x, int8_t y);
 void zmk_hid_mouse_movement_update(int16_t x, int16_t y);

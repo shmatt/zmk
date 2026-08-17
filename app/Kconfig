@@ -209,6 +209,19 @@ config ZMK_BLE_CONSUMER_REPORT_QUEUE_SIZE
     int "Max number of consumer HID reports to queue for sending over BLE"
     default 5
 
+config ZMK_GAMEPAD
+    bool "Gamepad support"
+    help
+      Adds a gamepad HID report (a Generic Desktop Gamepad with two sticks and
+      32 buttons) to the existing HID interface, for firmware that sources
+      controller input from somewhere other than the keymap -- for example a
+      module acting as a BLE central for a real controller.
+
+config ZMK_BLE_GAMEPAD_REPORT_QUEUE_SIZE
+    int "Max number of gamepad HID reports to queue for sending over BLE"
+    default 20
+    depends on ZMK_GAMEPAD
+
 config ZMK_BLE_MOUSE_REPORT_QUEUE_SIZE
     int "Max number of mouse HID reports to queue for sending over BLE"
     default 20

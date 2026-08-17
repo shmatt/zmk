@@ -73,3 +73,10 @@ int zmk_endpoints_send_report(uint16_t usage_page);
 #if IS_ENABLED(CONFIG_ZMK_MOUSE)
 int zmk_endpoints_send_mouse_report();
 #endif // IS_ENABLED(CONFIG_ZMK_MOUSE)
+
+#if IS_ENABLED(CONFIG_ZMK_GAMEPAD)
+/**
+ * Sends the HID gamepad report to the selected endpoint.
+ */
+int zmk_endpoints_send_gamepad_report();
+#endif // IS_ENABLED(CONFIG_ZMK_MOUSE)
