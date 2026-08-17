@@ -35,8 +35,9 @@ static struct zmk_hid_mouse_report mouse_report = {
 
 #if IS_ENABLED(CONFIG_ZMK_GAMEPAD)
 
-static struct zmk_hid_gamepad_report gamepad_report = {.report_id = ZMK_HID_REPORT_ID_GAMEPAD,
-                                                        .body = {0}};
+/* hat defaults to neutral rather than 0, which would read as "up". */
+static struct zmk_hid_gamepad_report gamepad_report = {
+    .report_id = ZMK_HID_REPORT_ID_GAMEPAD, .body = {.hat = ZMK_HID_GAMEPAD_HAT_NEUTRAL}};
 
 #endif // IS_ENABLED(CONFIG_ZMK_GAMEPAD)
 
@@ -518,10 +519,35 @@ void zmk_hid_gamepad_right_stick_set(int8_t x, int8_t y) {
     gamepad_report.body.d_rz = y;
 }
 
+void zmk_hid_gamepad_dpad_set(bool up, bool down, bool left, bool right) {
+    /* Opposing directions cancel: a physical hat cannot report both. */
+    if (up && down) {
+        up = down = false;
+    }
+    if (left && right) {
+        left = right = false;
+    }
+
+    uint8_t hat = ZMK_HID_GAMEPAD_HAT_NEUTRAL;
+    if (up) {
+        hat = right ? 1 : (left ? 7 : 0);
+    } else if (down) {
+        hat = right ? 3 : (left ? 5 : 4);
+    } else if (right) {
+        hat = 2;
+    } else if (left) {
+        hat = 6;
+    }
+
+    gamepad_report.body.hat = hat;
+}
+
 void zmk_hid_gamepad_clear(void) {
     memset(&gamepad_report.body, 0, sizeof(gamepad_report.body));
     memset(explicit_gamepad_button_counts, 0, sizeof(explicit_gamepad_button_counts));
     explicit_gamepad_buttons = 0;
+    /* Neutral, not 0 -- 0 is "up". */
+    gamepad_report.body.hat = ZMK_HID_GAMEPAD_HAT_NEUTRAL;
 }
 
 struct zmk_hid_gamepad_report *zmk_hid_get_gamepad_report(void) { return &gamepad_report; }
