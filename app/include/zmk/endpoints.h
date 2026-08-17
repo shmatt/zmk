@@ -106,6 +106,13 @@ int zmk_endpoint_send_report(uint16_t usage_page);
 int zmk_endpoint_send_mouse_report();
 #endif // IS_ENABLED(CONFIG_ZMK_POINTING)
 
+#if IS_ENABLED(CONFIG_ZMK_GAMEPAD)
+/**
+ * Sends the HID gamepad report to the selected endpoint.
+ */
+int zmk_endpoint_send_gamepad_report();
+#endif // IS_ENABLED(CONFIG_ZMK_GAMEPAD)
+
 /**
  * Clears all HID reports for the selected endpoint.
  */
