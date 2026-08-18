@@ -283,6 +283,21 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_REPORT_SIZE(0x01),
     HID_REPORT_COUNT(ZMK_HID_GAMEPAD_NUM_BUTTONS),
     HID_INPUT(ZMK_HID_MAIN_VAL_DATA | ZMK_HID_MAIN_VAL_VAR | ZMK_HID_MAIN_VAL_ABS),
+    /* A hat switch, because a D-pad reported as four buttons produces no
+     * D-pad events on hosts -- they derive those only from a hat. Four bits
+     * carry the eight directions, with the null state marking neutral, then
+     * four bits of padding to finish the byte. */
+    HID_USAGE_PAGE(HID_USAGE_GEN_DESKTOP),
+    HID_USAGE(HID_USAGE_GD_HAT_SWITCH),
+    HID_LOGICAL_MIN8(0x00),
+    HID_LOGICAL_MAX8(0x07),
+    HID_REPORT_SIZE(0x04),
+    HID_REPORT_COUNT(0x01),
+    HID_INPUT(ZMK_HID_MAIN_VAL_DATA | ZMK_HID_MAIN_VAL_VAR | ZMK_HID_MAIN_VAL_ABS |
+              ZMK_HID_MAIN_VAL_NULL),
+    HID_REPORT_SIZE(0x04),
+    HID_REPORT_COUNT(0x01),
+    HID_INPUT(ZMK_HID_MAIN_VAL_CONST | ZMK_HID_MAIN_VAL_VAR | ZMK_HID_MAIN_VAL_ABS),
     HID_END_COLLECTION,
     HID_END_COLLECTION,
 #endif // IS_ENABLED(CONFIG_ZMK_GAMEPAD)
@@ -376,12 +391,19 @@ struct zmk_hid_mouse_resolution_feature_report {
 
 #if IS_ENABLED(CONFIG_ZMK_GAMEPAD)
 
+#define ZMK_HID_GAMEPAD_HAT_NEUTRAL 0x0F
+
 struct zmk_hid_gamepad_report_body {
     int8_t left_x;
     int8_t left_y;
     int8_t right_x;
     int8_t right_y;
     zmk_gamepad_button_flags_t buttons;
+    /* Hat switch: 0 = up, then clockwise in 45-degree steps to 7, with
+     * ZMK_HID_GAMEPAD_HAT_NEUTRAL (outside the logical range, hence the
+     * descriptor's null state) meaning centred. Last, so the fields above
+     * keep their offsets. */
+    uint8_t hat;
 } __packed;
 
 struct zmk_hid_gamepad_report {
@@ -446,6 +468,9 @@ int zmk_hid_gamepad_button_release(zmk_gamepad_button_t button);
 /* Absolute stick positions, unlike the mouse's relative deltas. */
 void zmk_hid_gamepad_left_stick_set(int8_t x, int8_t y);
 void zmk_hid_gamepad_right_stick_set(int8_t x, int8_t y);
+/* Directions as booleans; opposing presses cancel, which is all a hat can
+ * physically represent. */
+void zmk_hid_gamepad_dpad_set(bool up, bool down, bool left, bool right);
 void zmk_hid_gamepad_clear(void);
 struct zmk_hid_gamepad_report *zmk_hid_get_gamepad_report(void);
 #endif // IS_ENABLED(CONFIG_ZMK_GAMEPAD)
