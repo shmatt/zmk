@@ -14,6 +14,7 @@
 #include <zmk/keys.h>
 #if IS_ENABLED(CONFIG_ZMK_POINTING)
 #include <zmk/pointing.h>
+#include <zmk/gamepad.h>
 #endif // IS_ENABLED(CONFIG_ZMK_POINTING)
 
 #include <dt-bindings/zmk/hid_usage.h>
