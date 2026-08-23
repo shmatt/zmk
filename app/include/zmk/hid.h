@@ -263,36 +263,37 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_COLLECTION(HID_COLLECTION_APPLICATION),
     HID_REPORT_ID(ZMK_HID_REPORT_ID_GAMEPAD),
     HID_COLLECTION(HID_COLLECTION_PHYSICAL),
-    /* Two sticks, as absolute axes: X/Y for the left, RX/RY for the right.
+    /* Two sticks, as absolute axes: X/Y for the left, Z/RZ for the right.
      * Signed 8-bit keeps the report small; hosts read logical 0 as centred.
      *
-     * RX/RY rather than Z/RZ on purpose. Android's own documentation puts the
-     * right stick on Z/RZ, but the kernel derives ABS_Z/ABS_RZ from those, and
-     * in the convention games actually follow -- the one an Xbox pad sets, via
-     * SDL's mapping database -- ABS_Z and ABS_RZ are the analog TRIGGERS.
-     * Every report carries all four axes, so a game reading triggers there
-     * sees them driven to whatever the right stick reads: moving any stick
-     * then reports the trigger as released, and an action held with the
-     * shoulder button stops mid-way. Minecraft breaking off a mine whenever
-     * either stick moved was this, and it was invisible to gamepad testers,
-     * which show the digital button still held. */
+     * Z/RZ for the right stick is what Android documents, and what hosts here
+     * actually act on -- a generic HID pad gets Android's fallback mapping, not
+     * the per-device layout file a recognised Xbox pad is matched against, so
+     * copying the Xbox axis layout does not buy Xbox behaviour. Putting the
+     * right stick on RX/RY instead left the camera unmoved and the triggers
+     * driving it. */
     HID_USAGE_PAGE(HID_USAGE_GEN_DESKTOP),
     HID_USAGE(HID_USAGE_GD_X),
     HID_USAGE(HID_USAGE_GD_Y),
-    HID_USAGE(HID_USAGE_GD_RX),
-    HID_USAGE(HID_USAGE_GD_RY),
+    HID_USAGE(HID_USAGE_GD_Z),
+    HID_USAGE(HID_USAGE_GD_RZ),
     HID_LOGICAL_MIN8(-0x7F),
     HID_LOGICAL_MAX8(0x7F),
     HID_REPORT_SIZE(0x08),
     HID_REPORT_COUNT(0x04),
     HID_INPUT(ZMK_HID_MAIN_VAL_DATA | ZMK_HID_MAIN_VAL_VAR | ZMK_HID_MAIN_VAL_ABS),
-    /* Analog triggers on Z/RZ, the pair an Xbox pad uses, so that games which
-     * read triggers only as axes -- an Xbox pad has no digital L2/R2 at all --
-     * see them. The Joy-Con's ZL/ZR are switches, so these report either end of
-     * the range and nothing between; a host cannot tell the difference from a
-     * trigger pressed all the way. Unsigned 0..255: rest is 0, not centre. */
-    HID_USAGE(HID_USAGE_GD_Z),
-    HID_USAGE(HID_USAGE_GD_RZ),
+    /* Analog triggers as Brake and Accelerator from the simulation page, which
+     * the kernel maps to ABS_BRAKE and ABS_GAS -- the axes Android pairs with
+     * LTRIGGER and RTRIGGER. Deliberately not Z/RZ: the sticks are there, and
+     * two controls on one axis means whichever reports last wins, which is how
+     * the right stick ended up cancelling a held trigger.
+     *
+     * The Joy-Con's ZL/ZR are switches, so these report either end of the range
+     * and nothing between; a host cannot tell that from a trigger pressed all
+     * the way. Unsigned 0..255: a trigger rests at one end, not the centre. */
+    HID_USAGE_PAGE(HID_USAGE_SIM),
+    HID_USAGE(HID_USAGE_SIM_BRAKE),
+    HID_USAGE(HID_USAGE_SIM_ACCELERATOR),
     HID_LOGICAL_MIN8(0x00),
     HID_LOGICAL_MAX16(0xFF, 0x00),
     HID_REPORT_SIZE(0x08),
