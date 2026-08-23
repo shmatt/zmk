@@ -286,6 +286,18 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_REPORT_SIZE(0x08),
     HID_REPORT_COUNT(0x04),
     HID_INPUT(ZMK_HID_MAIN_VAL_DATA | ZMK_HID_MAIN_VAL_VAR | ZMK_HID_MAIN_VAL_ABS),
+    /* Analog triggers on Z/RZ, the pair an Xbox pad uses, so that games which
+     * read triggers only as axes -- an Xbox pad has no digital L2/R2 at all --
+     * see them. The Joy-Con's ZL/ZR are switches, so these report either end of
+     * the range and nothing between; a host cannot tell the difference from a
+     * trigger pressed all the way. Unsigned 0..255: rest is 0, not centre. */
+    HID_USAGE(HID_USAGE_GD_Z),
+    HID_USAGE(HID_USAGE_GD_RZ),
+    HID_LOGICAL_MIN8(0x00),
+    HID_LOGICAL_MAX16(0xFF, 0x00),
+    HID_REPORT_SIZE(0x08),
+    HID_REPORT_COUNT(0x02),
+    HID_INPUT(ZMK_HID_MAIN_VAL_DATA | ZMK_HID_MAIN_VAL_VAR | ZMK_HID_MAIN_VAL_ABS),
     HID_USAGE_PAGE(HID_USAGE_BUTTON),
     HID_USAGE_MIN8(0x1),
     HID_USAGE_MAX8(ZMK_HID_GAMEPAD_NUM_BUTTONS),
@@ -409,6 +421,12 @@ struct zmk_hid_gamepad_report_body {
     int8_t left_y;
     int8_t right_x;
     int8_t right_y;
+    /* Unsigned, unlike the sticks: a trigger's rest position is one end of its
+     * range, not the middle. Declaring them alongside the signed stick axes
+     * would put an idle trigger in the centre of its declared range, which a
+     * host reads as half pressed. */
+    uint8_t left_trigger;
+    uint8_t right_trigger;
     zmk_gamepad_button_flags_t buttons;
     /* Hat switch: 0 = up, then clockwise in 45-degree steps to 7, with
      * ZMK_HID_GAMEPAD_HAT_NEUTRAL (outside the logical range, hence the
@@ -481,6 +499,12 @@ void zmk_hid_gamepad_left_stick_set(int8_t x, int8_t y);
 void zmk_hid_gamepad_right_stick_set(int8_t x, int8_t y);
 /* Directions as booleans; opposing presses cancel, which is all a hat can
  * physically represent. */
+/* Full scale for the analog triggers, matching the descriptor's logical max. */
+#define ZMK_HID_GAMEPAD_TRIGGER_MAX 0xFF
+
+void zmk_hid_gamepad_left_trigger_set(uint8_t value);
+void zmk_hid_gamepad_right_trigger_set(uint8_t value);
+
 void zmk_hid_gamepad_dpad_set(bool up, bool down, bool left, bool right);
 void zmk_hid_gamepad_clear(void);
 struct zmk_hid_gamepad_report *zmk_hid_get_gamepad_report(void);

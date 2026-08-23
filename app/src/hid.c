@@ -530,6 +530,14 @@ void zmk_hid_gamepad_right_stick_set(int8_t x, int8_t y) {
     gamepad_report.body.right_y = y;
 }
 
+void zmk_hid_gamepad_left_trigger_set(uint8_t value) {
+    gamepad_report.body.left_trigger = value;
+}
+
+void zmk_hid_gamepad_right_trigger_set(uint8_t value) {
+    gamepad_report.body.right_trigger = value;
+}
+
 void zmk_hid_gamepad_dpad_set(bool up, bool down, bool left, bool right) {
     /* Opposing directions cancel: a physical hat cannot report both. */
     if (up && down) {
