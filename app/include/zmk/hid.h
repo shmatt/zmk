@@ -263,13 +263,24 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_COLLECTION(HID_COLLECTION_APPLICATION),
     HID_REPORT_ID(ZMK_HID_REPORT_ID_GAMEPAD),
     HID_COLLECTION(HID_COLLECTION_PHYSICAL),
-    /* Two sticks, as absolute axes: X/Y for the left, Z/RZ for the right.
-     * Signed 8-bit keeps the report small; hosts read logical 0 as centred. */
+    /* Two sticks, as absolute axes: X/Y for the left, RX/RY for the right.
+     * Signed 8-bit keeps the report small; hosts read logical 0 as centred.
+     *
+     * RX/RY rather than Z/RZ on purpose. Android's own documentation puts the
+     * right stick on Z/RZ, but the kernel derives ABS_Z/ABS_RZ from those, and
+     * in the convention games actually follow -- the one an Xbox pad sets, via
+     * SDL's mapping database -- ABS_Z and ABS_RZ are the analog TRIGGERS.
+     * Every report carries all four axes, so a game reading triggers there
+     * sees them driven to whatever the right stick reads: moving any stick
+     * then reports the trigger as released, and an action held with the
+     * shoulder button stops mid-way. Minecraft breaking off a mine whenever
+     * either stick moved was this, and it was invisible to gamepad testers,
+     * which show the digital button still held. */
     HID_USAGE_PAGE(HID_USAGE_GEN_DESKTOP),
     HID_USAGE(HID_USAGE_GD_X),
     HID_USAGE(HID_USAGE_GD_Y),
-    HID_USAGE(HID_USAGE_GD_Z),
-    HID_USAGE(HID_USAGE_GD_RZ),
+    HID_USAGE(HID_USAGE_GD_RX),
+    HID_USAGE(HID_USAGE_GD_RY),
     HID_LOGICAL_MIN8(-0x7F),
     HID_LOGICAL_MAX8(0x7F),
     HID_REPORT_SIZE(0x08),
